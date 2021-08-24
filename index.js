@@ -4,7 +4,7 @@ const port = 5000
 const bodyParser = require("body-parser")
 const cookieParser = require('cookie-parser') 
 const config = require('./config/key')
-
+const {auth} = require('./middleware/auth')
 const { User } = require("./models/User")
 
 //bodyParser 가 client에서 오는정보를 분석해서 사용할수 있게 가공
@@ -25,7 +25,7 @@ mongoose.connect(config.mongoURI, {
 
 app.get('/', (req, res) => res.send('Hello World~~!'))
 
-app.post('/register', (req, res) => {
+app.post('/api/user/register', (req, res) => {
   //회원 가입 할때 필요한 정보들을 client에서  req => db
   
   const user = new User(req.body);
@@ -67,10 +67,34 @@ app.post('/api/users/login', (req, res) => {
   })
 })
 
+app.get('/api/users/auth', auth, (req, res) => {
+  // 여기 까지 미들웨어를 통과해 왔다는 얘기는 Authentication 이 true
+  res.status(200).json({
+    _id: req.user._id,
+    isAdmin: req.user.role === 0 ? false : true,
+    isAuth: true,
+    email: req.user.email,
+    name: req.user.nmae,
+    lastname: req.user.lastname,
+    role: req.user.role,
+    image: req.user.image
+  })
+})
+
+app.get('/api/users/logout', auth, (req, res) => {
+  User.findOneAndUpdate({ _id: req.user._id },
+    { token: '' }
+    , (err, user) => {
+      if (err) return res.json({ sucess: false, err });
+      return res.status(200).send({
+        sucess: true
+      })
+  })
+})
 
 app.listen(port, () => {
   return (
-    console.log(`-------- Let Start node sever ----------`),
+    console.log(`-------- Let's Start node sever ----------`),
     console.log(`Example app listenling on port ${port}!`),
     console.log(`-----------------------------------------`)
   )
