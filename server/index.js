@@ -43,7 +43,7 @@ app.post('/api/user/register', (req, res) => {
   })
 })
 
-app.post('/api/users/login', (req, res) => {
+app.post('/api/user/login', (req, res) => {
   console.log('login 요청');
   //요청된 이메일을 데이터베이스에서 있는지 찾는다.
   User.findOne({ email: req.body.email }, (err, user) => {
